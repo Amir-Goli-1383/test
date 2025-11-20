@@ -328,7 +328,7 @@ flowchart TB
 ---
 ## ۵. تصمیم‌گیری‌های معماری (Architecture Decision Records - ADR)
 
-<details open>
+<details>
 <summary>مشاهده فهرست کامل تصمیم‌گیری‌های معماری (ADR)</summary>
 
 ✔ **ADR-001** — انتخاب معماری میکروسرویس‌ها به‌جای مونولیتیک  
