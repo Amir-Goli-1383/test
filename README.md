@@ -1,4 +1,3 @@
-
 # 🎓 پروژه درس تحلیل و طراحی نرم‌افزار پیشرفته
 
 **موضوع:** پلتفرم مدیریت هوشمند دانشگاه
@@ -38,48 +37,44 @@ graph TD
 ✔ API Gateway
 
 ---
-
-## 🧱 ۳. نیازمندی‌ها
+## ۳. نیازمندی‌ها
 
 <details>
 <summary>۳.۱ نیازمندی‌های عملکردی (Functional Requirements)</summary>
 
-| کد    | سرویس       | نیازمندی                        | توضیح            |
-| ----- | ----------- | ------------------------------- | ---------------- |
-| FR-01 | Auth        | ثبت‌نام/ورود                    | JWT              |
-| FR-02 | Auth        | صدور JWT                        | Login Token      |
-| FR-03 | Booking     | مشاهده منابع                    | اتاق‌ها، کلاس‌ها |
-| FR-04 | Booking     | رزرو + جلوگیری از Overbooking   | قفل + چک تداخل   |
-| FR-05 | Marketplace | تعریف محصول                     | توسط فروشنده     |
-| FR-06 | Marketplace | الگوی Saga                      | خرید چندمرحله‌ای |
-| FR-07 | Exam        | ساخت آزمون                      | استاد            |
-| FR-08 | Exam        | شرکت در آزمون + Circuit Breaker | اعلان شروع       |
-| FR-09 | IoT         | داده زنده سنسور                 | دما و کلاس       |
-| FR-10 | IoT         | نقشه شاتل                       | موقعیت GPS       |
+| کد     | سرویس          | نیازمندی                              | توضیح                                  |
+|--------|----------------|----------------------------------------|----------------------------------------|
+| FR-01  | احراز هویت     | ثبت‌نام و ورود                        | با توکن JWT                           |
+| FR-02  | احراز هویت     | صدور توکن JWT                         | توکن ورود                             |
+| FR-03  | رزرو منابع     | مشاهده منابع (اتاق، کلاس و …)          | لیست موجودی                           |
+| FR-04  | رزرو منابع     | رزرو + جلوگیری از رزرو بیش از حد      | قفل توزیع‌شده + چک تداخل             |
+| FR-05  | بازارچه         | تعریف محصول توسط فروشنده              | بارگذاری کالا                         |
+| FR-06  | بازارچه         | خرید چندمرحله‌ای                      | با الگوی ساگا                         |
+| FR-07  | آزمون           | ساخت آزمون توسط استاد                  | سوالات و زمان‌بندی                    |
+| FR-08  | آزمون           | شرکت در آزمون + قطع‌کننده مدار         | اعلان شروع آزمون                      |
+| FR-09  | اینترنت اشیا    | دریافت داده زنده سنسور                | دما، رطوبت، حضور و …                 |
+| FR-10  | اینترنت اشیا    | نقشه زنده شاتل دانشگاه                | موقعیت GPS                            |
 
 </details>
 
 <details>
 <summary>۳.۲ نیازمندی‌های غیرعملکردی (Non-Functional Requirements)</summary>
 
-| کد       | عنوان            | پیامد معماری            |
-| -------- | ---------------- | ----------------------- |
-| NFR-S01  | مقیاس‌پذیری افقی | Stateless بودن سرویس‌ها |
-| NFR-MT01 | Multi-Tenancy    | Schema-per-tenant       |
-| NFR-P01  | Performance      | Cache و Async           |
-| NFR-SE01 | Security         | JWT + RBAC              |
-| NFR-R01  | Fault Tolerance  | Saga + Circuit Breaker  |
+| کد         | عنوان                   | پیامد معماری                                   |
+|------------|------------------------|------------------------------------------------|
+| NFR-S01    | مقیاس‌پذیری افقی       | سرویس‌ها کاملاً بدون حالت (Stateless)         |
+| NFR-MT01   | چندمستأجری             | جداسازی در سطح اسکیما (Schema-per-Tenant)     |
+| NFR-P01    | عملکرد بالا             | کش (Cache) + پردازش ناهمزمان (Async)         |
+| NFR-SE01   | امنیت                   | توکن JWT + مدیریت دسترسی نقش‌محور (RBAC)      |
+| NFR-R01    | تحمل خطا               | الگوی ساگا + قطع‌کننده مدار                  |
 
 </details>
 
 ---
-
-## 🧱 ۴. دیاگرام‌های C4
+## ۴. دیاگرام‌های C4
 
 <details>
-<summary>📘 Level 1 – System Context</summary>
-
-> نمای کلی کاربران و سیستم
+<summary>Level 1 – نمای کلی سیستم (System Context)</summary>
 
 ```mermaid
 flowchart TB
@@ -87,18 +82,16 @@ flowchart TB
     Teacher([استاد])
     Seller([فروشنده])
     Admin([مدیر سیستم])
-
-    APIGateway([API Gateway])
+    APIGateway([دروازه API])
     MainSystem([پلتفرم مدیریت هوشمند دانشگاه])
     MessageBroker([RabbitMQ])
-    DBs((پایگاه‌داده سرویس‌ها))
-    IoTDevice([سنسور IoT<br/>دما/موقعیت])
+    DBs((دیتابیس‌های سرویس‌ها))
+    IoTDevice([سنسورهای اینترنت اشیا<br/>دما / موقعیت])
 
     Student --> APIGateway
     Teacher --> APIGateway
     Seller --> APIGateway
     Admin --> APIGateway
-
     APIGateway --> MainSystem
     MainSystem --> MessageBroker
     MainSystem --> DBs
@@ -108,228 +101,196 @@ flowchart TB
 </details>
 
 <details>
-<summary>📗 Level 2 – Container Diagram</summary>
-
-> سرویس‌ها + دیتابیس مستقل + RabbitMQ
+<summary>Level 2 – دیاگرام کانتینرها (Container Diagram)</summary>
 
 ```mermaid
 flowchart TB
+    Student([دانشجو]) --> APIGateway[[دروازه API]]
+    Teacher([استاد]) --> APIGateway
+    Seller([فروشنده]) --> APIGateway
+    Admin([مدیر سیستم]) --> APIGateway
 
-    Student([دانشجو])
-    Teacher([استاد])
-    Seller([فروشنده])
-    Admin([مدیر سیستم])
-
-    APIGateway[[API Gateway]]
-
-    subgraph Services [سرویس‌های سیستم]
-        AuthService[[Auth Service]]
-        BookingService[[Booking Service]]
-        MarketplaceService[[Marketplace Service]]
-        ExamService[[Exam Service]]
-        IoTService[[IoT Service]]
+    subgraph Services [سرویس‌های اصلی سیستم]
+        AuthService[[سرویس احراز هویت]]
+        BookingService[[سرویس رزرو منابع]]
+        MarketplaceService[[سرویس بازارچه]]
+        ExamService[[سرویس آزمون]]
+        IoTService[[سرویس اینترنت اشیا]]
         MessageBroker[(RabbitMQ)]
     end
 
-    AuthDB[(Auth DB)]
-    BookingDB[(Booking DB)]
-    MarketDB[(Marketplace DB)]
-    ExamDB[(Exam DB)]
-    IoTDB[(IoT DB)]
+    AuthDB[(دیتابیس احراز هویت)]
+    BookingDB[(دیتابیس رزرو)]
+    MarketDB[(دیتابیس بازارچه)]
+    ExamDB[(دیتابیس آزمون)]
+    IoTDB[(دیتابیس اینترنت اشیا)]
 
-    Student --> APIGateway
-    Teacher --> APIGateway
-    Seller --> APIGateway
-    Admin --> APIGateway
-
-    APIGateway --> AuthService
-    APIGateway --> BookingService
-    APIGateway --> MarketplaceService
-    APIGateway --> ExamService
-    APIGateway --> IoTService
-
+    APIGateway --> AuthService & BookingService & MarketplaceService & ExamService & IoTService
     AuthService --> AuthDB
     BookingService --> BookingDB
     MarketplaceService --> MarketDB
     ExamService --> ExamDB
     IoTService --> IoTDB
 
-    MarketplaceService --> MessageBroker
-    BookingService --> MessageBroker
-    ExamService --> MessageBroker
-    IoTService --> MessageBroker
-
-    MessageBroker --> MarketplaceService
-    MessageBroker --> BookingService
-    MessageBroker --> ExamService
-    MessageBroker --> IoTService
+    MarketplaceService <--> MessageBroker
+    BookingService <--> MessageBroker
+    ExamService <--> MessageBroker
+    IoTService <--> MessageBroker
 ```
 
 </details>
 
 <details>
-<summary>🧩 Level 3 — Auth Service</summary>
-
-> احراز هویت، JWT، Role Management
+<summary>Level 3 — سرویس احراز هویت (Auth Service)</summary>
 
 ```mermaid
 flowchart TB
-
-    subgraph AuthService ["Auth Service"]
-        Controller[[Auth Controller]]
-        ServiceLayer[[Auth Logic]]
-        UserRepo[(User Repo)]
-        RoleRepo[(Role Repo)]
-        JWTProvider[[JWT Provider]]
-        PasswordHasher[[Password Hasher]]
-        RBAC[[RBAC Manager]]
+    subgraph AuthService ["سرویس احراز هویت"]
+        Controller[[کنترلر احراز هویت]]
+        ServiceLayer[[لایه منطق]]
+        UserRepo[(مخزن کاربران)]
+        RoleRepo[(مخزن نقش‌ها)]
+        JWTProvider[[تولیدکننده توکن JWT]]
+        PasswordHasher[[هش‌کننده رمز عبور]]
+        RBAC[[مدیریت دسترسی نقش‌محور]]
     end
-
-    AuthDB[(Auth DB)]
+    AuthDB[(دیتابیس احراز هویت)]
 
     Controller --> ServiceLayer
-    ServiceLayer --> UserRepo
-    ServiceLayer --> RoleRepo
-    ServiceLayer --> JWTProvider
-    ServiceLayer --> PasswordHasher
-    ServiceLayer --> RBAC
-
-    UserRepo --> AuthDB
-    RoleRepo --> AuthDB
+    ServiceLayer --> UserRepo & RoleRepo & JWTProvider & PasswordHasher & RBAC
+    UserRepo & RoleRepo --> AuthDB
 ```
 
 </details>
 
 <details>
-<summary>🧩 Level 3 – Resource & Booking Service</summary>
-
-> رزرو، جلوگیری از Overbooking، Lock Manager
+<summary>Level 3 — سرویس رزرو منابع (Booking Service)</summary>
 
 ```mermaid
 flowchart TB
-    subgraph BookingService ["Booking Service"]
-        BookingController[[Booking Controller]]
-        ReservationManager[[Reservation Manager]]
-        AvailabilityChecker[[Availability Checker]]
-        BookingRepo[(Booking Repo)]
-        ResourceRepo[(Resource Repo)]
-        LockManager[[Distributed Lock Manager]]
-        EventPublisher[[Event Publisher]]
-        NotificationClient[[Notification Client]]
+    subgraph BookingService ["سرویس رزرو منابع"]
+        BookingController[[کنترلر رزرو]]
+        ReservationManager[[مدیر رزرو]]
+        AvailabilityChecker[[بررسی در دسترس بودن]]
+        BookingRepo[(مخزن رزروها)]
+        ResourceRepo[(مخزن منابع)]
+        LockManager[[مدیر قفل توزیع‌شده]]
+        EventPublisher[[انتشاردهنده رویداد]]
+        NotificationClient[[کلاینت اعلان]]
     end
-
-    Cache[(Redis Cache)]
-    BookingDB[(Booking DB)]
+    Cache[(کش Redis)]
+    BookingDB[(دیتابیس رزرو)]
     MessageBroker[(RabbitMQ)]
 
     BookingController --> ReservationManager
-    ReservationManager --> AvailabilityChecker
-    ReservationManager --> LockManager
-    ReservationManager --> BookingRepo
-    ReservationManager --> EventPublisher
-    ReservationManager --> NotificationClient
+    ReservationManager --> AvailabilityChecker & LockManager & BookingRepo & EventPublisher & NotificationClient
     AvailabilityChecker --> Cache
-    BookingRepo --> BookingDB
-    ResourceRepo --> BookingDB
+    BookingRepo & ResourceRepo --> BookingDB
     EventPublisher --> MessageBroker
 ```
 
 </details>
 
 <details>
-<summary>🧩 Level 3 — Marketplace Service</summary>
-
-> فرآیند خرید با Saga + جبران (Compensation)
+<summary>Level 3 — سرویس بازارچه (Marketplace Service - الگوی ساگا)</summary>
 
 ```mermaid
 flowchart TB
-
-    subgraph MarketplaceService ["Marketplace Service - Saga Orchestrator"]
-
-        MarketplaceController[[Marketplace Controller]]
-        OrderManager[[Order Manager]]
-        SagaOrchestrator[[Saga Orchestrator]]
-        InventoryChecker[[Inventory Checker]]
-        PaymentClient[[Payment Client]]
-        OrderRepo[(Order Repo)]
-        ProductRepo[(Product Repo)]
-        EventPublisher[[Event Publisher]]
-        EventConsumer[[Event Consumer]]
-        CompensationManager[[Compensation Manager]]
-
+    subgraph MarketplaceService ["سرویس بازارچه - هماهنگ‌کننده ساگا"]
+        MarketplaceController[[کنترلر بازارچه]]
+        OrderManager[[مدیر سفارش]]
+        SagaOrchestrator[[هماهنگ‌کننده ساگا]]
+        InventoryChecker[[بررسی موجودی]]
+        PaymentClient[[کلاینت پرداخت]]
+        OrderRepo[(مخزن سفارش‌ها)]
+        ProductRepo[(مخزن محصولات)]
+        EventPublisher[[انتشاردهنده رویداد]]
+        EventConsumer[[دریافت‌کننده رویداد]]
+        CompensationManager[[مدیر جبران]]
     end
 
-    OrderDB[(Order DB)]
-    ProductDB[(Product DB)]
+    OrderDB[(دیتابیس سفارش)]
+    ProductDB[(دیتابیس محصول)]
     MessageBroker[(RabbitMQ)]
-    IdempotencyStore[(Idempotency Store)]
+    IdempotencyStore[(ذخیره idempotency)]
 
+    %% جریان اصلی
     MarketplaceController --> OrderManager
     OrderManager --> InventoryChecker
     OrderManager --> PaymentClient
     OrderManager --> SagaOrchestrator
     OrderManager --> OrderRepo
+    OrderManager --> IdempotencyStore
 
+    %% بررسی موجودی → مخزن محصولات → دیتابیس
     InventoryChecker --> ProductRepo
     ProductRepo --> ProductDB
+
+    %% ذخیره سفارش → دیتابیس
     OrderRepo --> OrderDB
 
+    %% ساگا و رویدادها
     SagaOrchestrator --> EventPublisher
     EventPublisher --> MessageBroker
     MessageBroker --> EventConsumer
     EventConsumer --> SagaOrchestrator
 
+    %% در صورت خطا → جبران (هر دو مخزن)
     SagaOrchestrator --> CompensationManager
     CompensationManager --> OrderRepo
     CompensationManager --> ProductRepo
 
-    OrderManager --> IdempotencyStore
+    %% استایل برای جبران‌کننده (اختیاری)
+    style CompensationManager fill:#ff9999,stroke:#b33
 ```
 
 </details>
 
 <details>
-<summary>🧩 Level 3 — Exam Service</summary>
-
-> شروع آزمون + Circuit Breaker + اعلان
+<summary>Level 3 — سرویس آزمون (Exam Service - قطع‌کننده مدار)</summary>
 
 ```mermaid
 flowchart TB
-
-    subgraph ExamService ["Exam Service - Online Exams"]
-
-        ExamController[[Exam Controller]]
-        ExamManager[[Exam Manager]]
-        ExamScheduler[[Exam Scheduler]]
-        QuestionRepo[(Question Repo)]
-        ExamRepo[(Exam Repo)]
-        ResultRepo[(Result Repo)]
-        NotificationClient[[Notification Client]]
-        CB[[Circuit Breaker]]
-        EventPublisher[[Event Publisher]]
-        EventConsumer[[Event Consumer]]
-
+    subgraph ExamService ["سرویس آزمون آنلاین"]
+        ExamController[[کنترلر آزمون]]
+        ExamManager[[مدیر آزمون]]
+        ExamScheduler[[زمان‌بندی آزمون]]
+        QuestionRepo[(مخزن سوالات)]
+        ExamRepo[(مخزن آزمون‌ها)]
+        ResultRepo[(مخزن نتایج)]
+        NotificationClient[[کلاینت اعلان]]
+        CB[[قطع‌کننده مدار]]
+        EventPublisher[[انتشاردهنده رویداد]]
+        EventConsumer[[دریافت‌کننده رویداد]]
     end
-
-    ExamDB[(Exam DB)]
-    QuestionDB[(Question DB)]
-    ResultDB[(Result DB)]
+    ExamDB[(دیتابیس آزمون)]
+    QuestionDB[(دیتابیس سوالات)]
+    ResultDB[(دیتابیس نتایج)]
     MessageBroker[(RabbitMQ)]
-    Cache[(Redis Cache)]
+    Cache[(کش Redis)]
 
+    %% جریان اصلی
     ExamController --> ExamManager
     ExamManager --> ExamRepo
     ExamManager --> QuestionRepo
     ExamManager --> ResultRepo
+    ExamManager --> Cache
+    ExamManager --> ExamScheduler
+
+    %% زمان‌بندی به مخزن آزمون وصل شد
+    ExamScheduler --> ExamRepo
+
+    %% اعلان با قطع‌کننده مدار
     ExamManager --> NotificationClient
     NotificationClient --> CB
-    CB --> NotificationClient
 
-    ExamManager --> Cache
+    %% ارتباط رویدادمحور
     ExamManager --> EventPublisher
     EventPublisher --> MessageBroker
     MessageBroker --> EventConsumer
+    EventConsumer --> ExamManager
 
+    %% اتصال مخزن‌ها به دیتابیس
     ExamRepo --> ExamDB
     QuestionRepo --> QuestionDB
     ResultRepo --> ResultDB
@@ -338,41 +299,66 @@ flowchart TB
 </details>
 
 <details>
-<summary>🧩 Level 3 — IoT Service</summary>
-
-> دریافت دادهٔ زنده — ردیابی شاتل — داشبورد
+<summary>Level 3 — سرویس اینترنت اشیا (IoT Service)</summary>
 
 ```mermaid
 flowchart TB
-
-    subgraph IoTService ["IoT Service - Live Sensors"]
-
-        IoTController[[IoT Controller]]
-        IoTIngestor[[Sensor Ingestor]]
-        IoTProcessor[[Data Processor]]
-        LocationTracker[[Shuttle Tracker]]
-        DashboardService[[Dashboard Updater]]
-        EventPublisher[[Event Publisher]]
-        EventConsumer[[Event Consumer]]
-
+    subgraph IoTService ["سرویس اینترنت اشیا - داده‌های زنده"]
+        IoTController[[کنترلر اینترنت اشیا]]
+        IoTIngestor[[دریافت‌کننده داده]]
+        IoTProcessor[[پردازشگر داده]]
+        LocationTracker[[ردیاب شاتل]]
+        DashboardService[[به‌روزرسان داشبورد]]
+        EventPublisher[[انتشاردهنده رویداد]]
+        EventConsumer[[دریافت‌کننده رویداد]]
     end
-
-    IoTDB[(IoT DB)]
-    Cache[(Redis Cache)]
+    IoTDB[(دیتابیس اینترنت اشیا)]
+    Cache[(کش Redis)]
     MessageBroker[(RabbitMQ)]
 
     IoTController --> IoTIngestor
     IoTIngestor --> IoTProcessor
-    IoTProcessor --> LocationTracker
-    IoTProcessor --> DashboardService
-    IoTProcessor --> IoTDB
-    IoTProcessor --> Cache
-
-    IoTProcessor --> EventPublisher
+    IoTProcessor --> LocationTracker & DashboardService & IoTDB & Cache & EventPublisher
     EventPublisher --> MessageBroker
     MessageBroker --> EventConsumer
 ```
 
 </details>
 
+---
+## ۵. تصمیم‌گیری‌های معماری (Architecture Decision Records - ADR)
 
+<details open>
+<summary>مشاهده فهرست کامل تصمیم‌گیری‌های معماری (ADR)</summary>
+
+✔ **ADR-001** — انتخاب معماری میکروسرویس‌ها به‌جای مونولیتیک  
+در این پروژه نیازمند استقلال سرویس‌ها، توسعه‌ی مستقل، مقیاس‌پذیری جداگانه و مدیریت ساده‌تر بودیم. معماری مونولیتیک با بزرگ شدن پروژه پیچیده و کند می‌شود، اما معماری میکروسرویس‌ها امکان توسعه‌ی مستقل با دیتابیس و تکنولوژی مخصوص هر سرویس را فراهم می‌کند و عایق‌بندی خطا (Fault Isolation) را به شکل بسیار بهتری تضمین می‌کند.
+
+✔ **ADR-002** — انتخاب توکن JWT به‌جای Session  
+در معماری میکروسرویس، استفاده از Session باعث وابستگی و ذخیره‌سازی حالت می‌شود. توکن JWT سرویس‌ها را کاملاً بدون حالت (Stateless) نگه می‌دارد و دروازه API مسئولیت اعتبارسنجی توکن را بر عهده دارد.
+
+✔ **ADR-003** — استفاده از دروازه API (API Gateway)  
+دروازه API نقطه‌ی ورود واحد و امن به کل سیستم است و امکان مدیریت احراز هویت، جلوگیری از حملات، ساده‌سازی مسیریابی و کاهش پیچیدگی سمت کلاینت را فراهم می‌کند.
+
+✔ **ADR-004** — انتخاب RabbitMQ برای ارتباط رویدادمحور  
+RabbitMQ بهترین گزینه برای ارتباط غیرهمزمان، کاملاً جدا شده و مقاوم در برابر خطا بین سرویس‌هاست. قابلیت‌هایی مانند تلاش مجدد، مسیریابی پیشرفته و صف مرده از اثر زنجیره‌ای خرابی‌ها جلوگیری می‌کند.
+
+✔ **ADR-005** — استفاده از الگوی ساگا (Saga) در فرآیند خرید  
+فرآیند خرید چندمرحله‌ای و توزیع‌شده است و هماهنگی دو مرحله‌ای (2PC) قابل استفاده نیست. الگوی ساگا با ترکیب اقدام اصلی و جبران‌کننده، مدیریت خطا را به شکل قابل‌اعتماد انجام می‌دهد.
+
+✔ **ADR-006** — استفاده از الگوی قطع‌کننده مدار (Circuit Breaker) در سرویس آزمون  
+برای جلوگیری از شکست آبشاری هنگام از کار افتادن سرویس اعلان، از الگوی قطع‌کننده مدار استفاده شده تا مکانیزم شکست سریع فعال شود.
+
+✔ **ADR-007** — انتخاب Redis برای کش و قفل توزیع‌شده  
+Redis به دلیل سرعت بالا، زمان انقضا و پشتیبانی از قفل توزیع‌شده انتخاب شد؛ برای جلوگیری از رزرو بیش از حد و پردازش سریع داده‌های اینترنت اشیا ضروری است.
+
+✔ **ADR-008** — انتخاب الگوی دیتابیس مجزا برای هر سرویس (Database-per-Service)  
+هر سرویس دیتابیس کاملاً جداگانه‌ای دارد تا وابستگی داده‌ای حذف شود.
+
+✔ **ADR-009** — انتخاب الگوی جداسازی در سطح اسکیما برای چندمستأجری (Schema-per-Tenant)  
+برای پشتیبانی همزمان از چندین دانشگاه، داده‌ها در سطح اسکیما جدا شده‌اند تا امنیت، ایزولاسیون و مدیریت پشتیبان‌گیری ساده‌تر شود.
+
+</details>
+
+---
+همینو کپی کنید و توی پروژه‌تون بذارید — دیگه هیچ چیزی جا نیفتاده!
